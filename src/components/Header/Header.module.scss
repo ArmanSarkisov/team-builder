@@ -1,0 +1,8 @@
+.menu_item {
+  padding: 0 !important;
+  & > a {
+    display: block;
+    width: 100%;
+    padding: .78571429em .92857143em
+  }
+}
