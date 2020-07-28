@@ -34,17 +34,33 @@ class Navigation {
             });
     }
 }
+class Resource {
+    static getResourcePerformance() {
+        return Monitoring.getEntriesByType('resource');
+    }
+
+    static RequestTiming() {
+        console.log(Date.now())
+        Resource.getResourcePerformance()
+            .forEach(item => {
+                console.log(item);
+                setTimeout(() => {
+                    console.log('Request timing = '+ item.name +' '+ (item.responseEnd - item.requestStart)+ ' '+item.duration);
+                }, 1000);
+            });
+    }
+}
 
 
 // TODO: need ms to sec function;
 const toSec = m => (m / 1000).toFixed(2);
 
-// const po = new PerformanceObserver((list) => {
-//     for (const entry of list.getEntries()) {
-//         console.log('Server Timing', entry);
-//     }
-// });
-// po.observe({ type: 'beacon', buffered: true });
+const po = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+        console.log('Server Timing', entry);
+    }
+});
+po.observe({ type: 'resource', buffered: true });
 
 // const perfData = window.performance.timing;
 // const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
@@ -52,5 +68,38 @@ const toSec = m => (m / 1000).toFixed(2);
 
 // classes methods execute
 // Navigation.DOMContentLoadedTiming();
-Navigation.DOMCompleteTiming();
+// Navigation.DOMCompleteTiming();
 
+// Wait at most two seconds before processing events.
+// requestIdleCallback( Resource.RequestTiming(), { timeout: 2000 });
+/*
+document.write("hello")
+
+const write = document.write;
+document.write = (params) => {
+    console.warn("noooo");
+    write.call(document, params);
+}
+document.write("bye")
+
+const evaluate = window.eval;
+
+window.eval = (params) => {
+    console.warn("noooo!");
+    evaluate.call(window, params)
+}
+
+eval("console.log(1+1)");
+
+*/
+
+
+
+
+
+/** DO NOT DELETE!!!!!!!!!! */
+
+//for finding the image element from the source
+// Array.from(document.getElementsByTagName('img')).filter(i => i.src=='https://www.nicepng.com/png/detail/503-5032252_shamim-amiri-blank-female-avatar-icon.png')
+
+/** DO NOT DELETE!!!!!!!!!! */

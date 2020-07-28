@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { Button, Container, Form } from 'semantic-ui-react';
 import { useForm } from 'react-hook-form';
-
+import image from './img.png'; 
 // store
 import * as registerActions from '../../store/register/actions';
 
@@ -21,6 +21,7 @@ const Home = ({ user, companies }) => {
     return <div>
         <Container>
             <Form onSubmit={handleSubmit(handleUpdateSubmit)}>
+            <img src={image} alt="" style={{width:'100px'}}/>
                 <Form.Field>
                     <label>First Name</label>
                     <input
