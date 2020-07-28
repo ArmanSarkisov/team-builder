@@ -29,7 +29,7 @@ class Navigation {
                 console.log(item);
                 // TODO: get Dom complete timing
                 setTimeout(() => {
-                    console.log('DOM complete = ' + item.domComplete);
+                    console.log('DOM complete = ' + toSec(item.domComplete));
                 }, 1000);
             });
     }
@@ -37,6 +37,7 @@ class Navigation {
 
 
 // TODO: need ms to sec function;
+const toSec = m => (m / 1000).toFixed(2);
 
 // const po = new PerformanceObserver((list) => {
 //     for (const entry of list.getEntries()) {
