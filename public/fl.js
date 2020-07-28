@@ -13,44 +13,57 @@ class Navigation {
     }
 
     static DOMContentLoadedTiming() {
-        Navigation.getNavigationPerformance()
-            .forEach(item => {
-                // console.log(item);
-                // TODO: get dom content loaded time, you need item.domContentLoadedEventEnd and item.domContentLoadedEventStart
-                setTimeout(() => {
-                    console.log('dom content loaded', item.domContentLoadedEventEnd, item.domContentLoadedEventStart);
-                }, 0);
-            });
+        return new Promise((resolve) => {
+            // TODO: promise inner validation
+            resolve(
+                Navigation.getNavigationPerformance()
+                    .forEach(item => {
+                        // console.log(item);
+                        // TODO: get dom content loaded time, you need item.domContentLoadedEventEnd and item.domContentLoadedEventStart
+                        setTimeout(() => {
+                            console.log('dom content loaded', item.domContentLoadedEventEnd, item.domContentLoadedEventStart);
+                        }, 0);
+                    })
+            );
+        });
     }
 
     static DOMCompleteTiming() {
-        Navigation.getNavigationPerformance()
-            .forEach(item => {
-                console.log(item);
-                // TODO: get Dom complete timing
-                setTimeout(() => {
-                    console.log('DOM complete = ' + toSec(item.domComplete));
-                }, 1000);
-            });
+        return new Promise((resolve) => {
+            // TODO: promise inner validation
+            resolve(
+                Navigation.getNavigationPerformance()
+                    .forEach(item => {
+                        setTimeout(() => {
+                            console.log('DOM complete = ' + toSec(item.domComplete));
+                        }, 1000);
+                    })
+            );
+
+            reject(console.log('ERROR'))
+        });
     }
 }
 
 
-// TODO: need ms to sec function;
 const toSec = m => (m / 1000).toFixed(2);
 
-// const po = new PerformanceObserver((list) => {
-//     for (const entry of list.getEntries()) {
-//         console.log('Server Timing', entry);
-//     }
-// });
-// po.observe({ type: 'beacon', buffered: true });
+/*
+DON'T TOUCH THE FOLLOWING CODE IN THIS COMMENT!!!
 
-// const perfData = window.performance.timing;
-// const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-// console.log(pageLoadTime);
+const po = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+        console.log('Server Timing', entry);
+    }
+});
+po.observe({ type: 'beacon', buffered: true });
+
+const perfData = window.performance.timing;
+const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+console.log(pageLoadTime);
+*/
 
 // classes methods execute
 // Navigation.DOMContentLoadedTiming();
 Navigation.DOMCompleteTiming();
-
+Navigation.DOMContentLoadedTiming();
