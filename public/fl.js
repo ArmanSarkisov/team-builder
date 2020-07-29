@@ -29,12 +29,27 @@ const requestProcessing = (arr) => {
     console.log(arr);
 };
 
+//UGLY: normala?
 const cssProcessing = links => {
-    console.log(links);
+    return links.map(link => {
+        const obj = {
+            isCached: link.transferSize === 0,
+            isMinified: link.name.includes(".min"),
+        };
+
+        for (let key in link) {
+            obj[key] = link[key];
+        }
+
+        return obj;
+    })
 };
 
 const resourceProcessing = (arr) => {
-    return [...imagesProcessing(arr.filter(item => item.initiatorType === 'img'))];
+    return [
+        ...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),
+        ...cssProcessing(arr.filter(item => item.initiatorType === 'css'))
+    ];
 };
 
 const navigationProcessing = (arr) => {
