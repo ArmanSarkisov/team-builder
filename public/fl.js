@@ -38,6 +38,7 @@ class Navigation {
             });
     }
 }
+
 // <-old classes
 
 
@@ -49,12 +50,12 @@ class Resource {
     }
 
     static RequestTiming() {
-        console.log(Date.now())
+        console.log(Date.now());
         Resource.getResourcePerformance()
             .forEach(item => {
                 console.log(item);
                 setTimeout(() => {
-                    console.log('Request timing = '+ item.name +' '+ (item.responseEnd - item.requestStart)+ ' '+item.duration);
+                    console.log('Request timing = ' + item.name + ' ' + (item.responseEnd - item.requestStart) + ' ' + item.duration);
                 }, 1000);
             });
     }
@@ -66,27 +67,25 @@ class Resource {
 // class -> link -> Rob
 // class -> css -> Rob
 // {
-    // useWebP: true || false
-    // isCache: true || false
-    // loadTime: 1
+// useWebP: true || false
+// isCache: true || false
+// loadTime: 1
 // }
 
 // TODO: need ms to sec function;
 const toSec = m => (m / 1000).toFixed(2);
-const arr = [];
-const po = new PerformanceObserver((list) => {
-    for (const entry of list.getEntries()) {
-        // console.log('Server Timing', entry);
-        if(entry.initiatorType === 'script') {
-            console.log('ARR');
-            console.log('ARRAY =>', arr);
-            arr.push(entry);
-        }
-    }
-});
-po.observe({ type: 'resource', buffered: true });
-
-
+// const arr = [];
+// const po = new PerformanceObserver((list) => {
+//     for (const entry of list.getEntries()) {
+//         // console.log('Server Timing', entry);
+//         if(entry.initiatorType === 'script') {
+//             console.log('ARR');
+//             console.log('ARRAY =>', arr);
+//             arr.push(entry);
+//         }
+//     }
+// });
+// po.observe({ type: 'resource', buffered: true });
 
 
 // const perfData = window.performance.timing;
@@ -99,29 +98,41 @@ po.observe({ type: 'resource', buffered: true });
 
 // Wait at most two seconds before processing events.
 // requestIdleCallback( Resource.RequestTiming(), { timeout: 2000 });
-/*
-document.write("hello")
 
-const write = document.write;
-document.write = (params) => {
-    console.warn("noooo");
-    write.call(document, params);
+
+class CheckUsingBadMethods {
+
+    static evalCount = 0;
+    static checkDocWriteCount = 0;
+
+    static checkUsingDocumentWrite() {
+        if (document) {
+            const write = document.write;
+            let usingDocWriteCount = 0;
+            document.write = (params) => {
+                usingDocWriteCount++;
+                CheckUsingBadMethods.checkDocWriteCount += usingDocWriteCount;
+                write.call(document, params);
+            };
+        }
+    }
+
+    static checkUsingEval() {
+        if (window) {
+            const evaluate = window.eval;
+            let usingEvalCount = 0;
+            window.eval = (params) => {
+                usingEvalCount++;
+                CheckUsingBadMethods.evalCount += usingEvalCount;
+                evaluate.call(window, params);
+            };
+        }
+    }
 }
-document.write("bye")
 
-const evaluate = window.eval;
-
-window.eval = (params) => {
-    console.warn("noooo!");
-    evaluate.call(window, params)
-}
-
-eval("console.log(1+1)");
-
-*/
-
-
-
+window.CheckUsingBadMethods = CheckUsingBadMethods;
+CheckUsingBadMethods.checkUsingEval();
+CheckUsingBadMethods.checkUsingDocumentWrite();
 
 
 /** DO NOT DELETE!!!!!!!!!! */
