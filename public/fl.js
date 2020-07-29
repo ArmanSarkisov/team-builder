@@ -1,71 +1,3 @@
-class Monitoring {
-    static getEntriesByType(type) {
-        if (typeof window !== 'undefined') {
-            return window.performance.getEntriesByType(type);
-        }
-        return null;
-    }
-}
-
-// old classes ->
-
-class Navigation {
-    static getNavigationPerformance() {
-        return Monitoring.getEntriesByType('navigation');
-    }
-
-    // TODO: Aharon
-    static DOMContentLoadedTiming() {
-        Navigation.getNavigationPerformance()
-            .forEach(item => {
-                // console.log(item);
-                // TODO: get dom content loaded time, you need item.domContentLoadedEventEnd and item.domContentLoadedEventStart
-                setTimeout(() => {
-                    console.log('dom content loaded', item.domContentLoadedEventEnd, item.domContentLoadedEventStart);
-                }, 0);
-            });
-    }
-
-    static isChached() {
-        return Navigation.getNavigationPerformance()[0].transferSize ?
-            console.log("The data is cached") :
-            console.log("The data is not cached");
-    }
-
-    // TODO: Rob
-    static DOMCompleteTiming() {
-        Navigation.getNavigationPerformance()
-            .forEach(item => {
-                console.log(item);
-                // TODO: get Dom complete timing
-                setTimeout(() => {
-                    console.log('DOM complete = ' + toSec(item.domComplete));
-                }, 1000);
-            });
-    }
-}
-
-// <-old classes
-
-
-// TODO: use PerformanceObserver
-
-class Resource {
-    static getResourcePerformance() {
-        return Monitoring.getEntriesByType('resource');
-    }
-
-    static RequestTiming() {
-        console.log(Date.now());
-        Resource.getResourcePerformance()
-            .forEach(item => {
-                console.log(item);
-                setTimeout(() => {
-                    console.log('Request timing = ' + item.name + ' ' + (item.responseEnd - item.requestStart) + ' ' + item.duration);
-                }, 1000);
-            });
-    }
-}
 
 // class -> images -> Aharon -> jpg png jpeg -> webp
 // class -> other -> Aharon
@@ -78,41 +10,73 @@ class Resource {
 // loadTime: 1
 // }
 
-// TODO: need ms to sec function;
-const toSec = m => (m / 1000).toFixed(2);
-const arr = [];
 
-const isCached = (arr) => {
-    return arr.map(item => (
-        {
-            ...item,
+const imagesProcessing = images => {
+    return images.map(item => {
+        const obj = {
             isCached: item.transferSize === 0
-        }))
-}
+        };
+
+        for(let key in item) {
+            obj[key] = item[key];
+        }
+
+        return obj;
+    })
+};
+
+const requestProcessing = (arr) => {
+    console.log(arr);
+};
+
+const cssProcessing = links => {
+    console.log(links);
+};
+
+const resourceProcessing = (arr) => {
+    return [...imagesProcessing(arr.filter(item => item.initiatorType === 'img'))];
+};
+
+const navigationProcessing = (arr) => {
+    console.log(arr);
+    return arr.map(item => {
+        const obj = {
+            domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
+        };
+
+        for(let key in item) {
+            obj[key] = item[key];
+        }
+
+        return obj;
+    })
+};
+
+
+
+
+
 
 const po = new PerformanceObserver((list) => {
-    const img = list.getEntries().filter(item => item.initiatorType === 'img');
-    const cache = isCached(img);
+    const dom = navigationProcessing(list.getEntries().filter(item => item instanceof PerformanceNavigationTiming));
+    const resources = resourceProcessing(list.getEntries().filter(item => item instanceof PerformanceResourceTiming));
 
-    for(let i = 0; i < cache.length; i++){
-        arr.push(cache[i]);
-    }
+    console.log('DOM =>', dom);
+    console.log('resources =>', resources);
 });
 
-po.observe({ type: 'resource', buffered: true });
+po.observe({ entryTypes: ['resource', 'navigation'], buffered: true });
 
 
-// const perfData = window.performance.timing;
-// const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-// console.log(pageLoadTime);
 
-// classes methods execute
-// Navigation.DOMContentLoadedTiming();
-// Navigation.DOMCompleteTiming();
 
-// Wait at most two seconds before processing events.
-// requestIdleCallback( Resource.RequestTiming(), { timeout: 2000 });
 
+
+
+
+
+
+/* DONT DELETE IT WORKED
 
 class CheckUsingBadMethods {
 
@@ -147,11 +111,32 @@ class CheckUsingBadMethods {
 window.CheckUsingBadMethods = CheckUsingBadMethods;
 CheckUsingBadMethods.checkUsingEval();
 CheckUsingBadMethods.checkUsingDocumentWrite();
-Navigation.isChached();
+Navigation.isPageCached();
+
+*/
+
+
+/* fetch maybe is ready
+function fetching(data, endpoint) {
+    fetch(`url/${endpoint}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+function fetchImgs(cache) {
+    fetching(cache, '/imgs');
+}
+function fetchNavTiming(cache) {
+    fetching(cache, '/imgs');
+}
+
+ */
+
 
 /** DO NOT DELETE!!!!!!!!!! */
 
 //for finding the image element from the source
 // Array.from(document.getElementsByTagName('img')).filter(i => i.src=='https://www.nicepng.com/png/detail/503-5032252_shamim-amiri-blank-female-avatar-icon.png')
-
+// requestIdleCallback( Resource.RequestTiming(), { timeout: 2000 });
 /** DO NOT DELETE!!!!!!!!!! */
