@@ -28,8 +28,8 @@ class Navigation {
 
     static isChached() {
         return Navigation.getNavigationPerformance()[0].transferSize ?
-        console.log("The data is cached") :
-        console.log("The data is not cached");
+            console.log("The data is cached") :
+            console.log("The data is not cached");
     }
 
     // TODO: Rob
@@ -80,18 +80,26 @@ class Resource {
 
 // TODO: need ms to sec function;
 const toSec = m => (m / 1000).toFixed(2);
-// const arr = [];
-// const po = new PerformanceObserver((list) => {
-//     for (const entry of list.getEntries()) {
-//         // console.log('Server Timing', entry);
-//         if(entry.initiatorType === 'script') {
-//             console.log('ARR');
-//             console.log('ARRAY =>', arr);
-//             arr.push(entry);
-//         }
-//     }
-// });
-// po.observe({ type: 'resource', buffered: true });
+const arr = [];
+
+const isCached = (arr) => {
+    return arr.map(item => (
+        {
+            ...item,
+            isCached: item.transferSize === 0
+        }))
+}
+
+const po = new PerformanceObserver((list) => {
+    const img = list.getEntries().filter(item => item.initiatorType === 'img');
+    const cache = isCached(img);
+
+    for(let i = 0; i < cache.length; i++){
+        arr.push(cache[i]);
+    }
+});
+
+po.observe({ type: 'resource', buffered: true });
 
 
 // const perfData = window.performance.timing;
