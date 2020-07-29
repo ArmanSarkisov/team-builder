@@ -26,6 +26,12 @@ class Navigation {
             });
     }
 
+    static isChached() {
+        return Navigation.getNavigationPerformance()[0].transferSize ?
+        console.log("The data is cached") :
+        console.log("The data is not cached");
+    }
+
     // TODO: Rob
     static DOMCompleteTiming() {
         Navigation.getNavigationPerformance()
@@ -133,7 +139,7 @@ class CheckUsingBadMethods {
 window.CheckUsingBadMethods = CheckUsingBadMethods;
 CheckUsingBadMethods.checkUsingEval();
 CheckUsingBadMethods.checkUsingDocumentWrite();
-
+Navigation.isChached();
 
 /** DO NOT DELETE!!!!!!!!!! */
 
