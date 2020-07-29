@@ -7,11 +7,14 @@ class Monitoring {
     }
 }
 
+// old classes ->
+
 class Navigation {
     static getNavigationPerformance() {
         return Monitoring.getEntriesByType('navigation');
     }
 
+    // TODO: Aharon
     static DOMContentLoadedTiming() {
         Navigation.getNavigationPerformance()
             .forEach(item => {
@@ -23,6 +26,7 @@ class Navigation {
             });
     }
 
+    // TODO: Rob
     static DOMCompleteTiming() {
         Navigation.getNavigationPerformance()
             .forEach(item => {
@@ -34,6 +38,11 @@ class Navigation {
             });
     }
 }
+// <-old classes
+
+
+// TODO: use PerformanceObserver
+
 class Resource {
     static getResourcePerformance() {
         return Monitoring.getEntriesByType('resource');
@@ -51,16 +60,34 @@ class Resource {
     }
 }
 
+// class -> images -> Aharon -> jpg png jpeg -> webp
+// class -> other -> Aharon
+// class -> xmlrequest -> Lilit
+// class -> link -> Rob
+// class -> css -> Rob
+// {
+    // useWebP: true || false
+    // isCache: true || false
+    // loadTime: 1
+// }
 
 // TODO: need ms to sec function;
 const toSec = m => (m / 1000).toFixed(2);
-
+const arr = [];
 const po = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-        console.log('Server Timing', entry);
+        // console.log('Server Timing', entry);
+        if(entry.initiatorType === 'script') {
+            console.log('ARR');
+            console.log('ARRAY =>', arr);
+            arr.push(entry);
+        }
     }
 });
 po.observe({ type: 'resource', buffered: true });
+
+
+
 
 // const perfData = window.performance.timing;
 // const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
