@@ -1,4 +1,3 @@
-
 // class -> images -> Aharon -> jpg png jpeg -> webp
 // class -> other -> Aharon
 // class -> xmlrequest -> Lilit
@@ -46,7 +45,22 @@ const requestProcessing = (arr) => {
 };
 
 //UGLY: normala?
-const cssProcessing = links => {
+const cssProcessing = styles => {
+    return styles.map(style => {
+        const obj = {
+            isCached: style.transferSize === 0,
+            isMinified: style.name.includes(".min"),
+        };
+
+        for (let key in style) {
+            obj[key] = style[key];
+        }
+
+        return obj;
+    })
+};
+
+const linkProcessing = links => {
     return links.map(link => {
         const obj = {
             isCached: link.transferSize === 0,
@@ -66,6 +80,7 @@ const resourceProcessing = (arr) => {
     return [
         ...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),
         ...cssProcessing(arr.filter(item => item.initiatorType === 'css')),
+        ...linkProcessing(arr.filter(item => item.initiatorType === 'link')),
         ...othersProcessing(arr.filter(item => item.initiatorType === 'other'))
     ];
 };
