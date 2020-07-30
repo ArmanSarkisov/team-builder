@@ -116,25 +116,67 @@ const requestProcessing = (arr) => {
 
 //UGLY: normala es 3 function-nery?
 const cssProcessing = styles => {
-    return styles.map(style => {
+    return styles.map(item => {
         const obj = {
-            isCached: style.transferSize === 0,
-            isMinified: style.name.includes(".min"),
+            isCached: item.transferSize === 0,
+            isMinified: item.name.includes(".min"),
+            date: Date.now(),
+            connectEnd: item.connectEnd,
+            connectStart: item.connectStart,
+            decodedBodySize: item.decodedBodySize,
+            domainLookupEnd: item.domainLookupEnd,
+            domainLookupStart: item.domainLookupStart,
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            nextHopProtocol: item.nextHopProtocol,
+            redirectEnd: item.redirectEnd,
+            redirectStart: item.redirectStart,
+            requestStart: item.requestStart,
+            responseEnd: item.responseEnd,
+            responseStart: item.responseStart,
+            secureConnectionStart: item.secureConnectionStart,
+            serverTiming: item.serverTiming,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+            workerStart: item.workerStart
         };
-
-        for (let key in style) {
-            obj[key] = style[key];
-        }
 
         return obj;
     })
 };
 
 const linkProcessing = links => {
-    return links.map(link => {
+    return links.map(item => {
         const obj = {
-            isCached: link.transferSize === 0,
-            isMinified: link.name.includes(".min"),
+            isCached: item.transferSize === 0,
+            isMinified: item.name.includes(".min"),
+            date: Date.now(),
+            connectEnd: item.connectEnd,
+            connectStart: item.connectStart,
+            decodedBodySize: item.decodedBodySize,
+            domainLookupEnd: item.domainLookupEnd,
+            domainLookupStart: item.domainLookupStart,
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            nextHopProtocol: item.nextHopProtocol,
+            redirectEnd: item.redirectEnd,
+            redirectStart: item.redirectStart,
+            requestStart: item.requestStart,
+            responseEnd: item.responseEnd,
+            responseStart: item.responseStart,
+            secureConnectionStart: item.secureConnectionStart,
+            serverTiming: item.serverTiming,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+            workerStart: item.workerStart
         };
 
         for (let key in link) {
@@ -146,15 +188,34 @@ const linkProcessing = links => {
 };
 
 const scriptProcessing = scripts => {
-    return scripts.map(script => {
+    return scripts.map(item => {
         const obj = {
-            isCached: script.transferSize === 0,
-            isMinified: script.name.includes(".min"),
+            isCached: item.transferSize === 0,
+            isMinified: item.name.includes(".min"),
+            date: Date.now(),
+            connectEnd: item.connectEnd,
+            connectStart: item.connectStart,
+            decodedBodySize: item.decodedBodySize,
+            domainLookupEnd: item.domainLookupEnd,
+            domainLookupStart: item.domainLookupStart,
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            nextHopProtocol: item.nextHopProtocol,
+            redirectEnd: item.redirectEnd,
+            redirectStart: item.redirectStart,
+            requestStart: item.requestStart,
+            responseEnd: item.responseEnd,
+            responseStart: item.responseStart,
+            secureConnectionStart: item.secureConnectionStart,
+            serverTiming: item.serverTiming,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+            workerStart: item.workerStart
         };
-
-        for (let key in script) {
-            obj[key] = script[key];
-        }
 
         return obj;
     })
