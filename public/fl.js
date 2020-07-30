@@ -9,6 +9,48 @@
 // loadTime: 1
 // }
 
+window.requestIdleCallback = window.requestIdleCallback || function (handler) {
+    let startTime = Date.now();
+
+    return setTimeout(function () {
+        handler({
+            didTimeout: false,
+            timeRemaining: function () {
+                return Math.max(0, 50.0 - (Date.now() - startTime));
+            }
+        });
+    }, 1);
+}
+
+const submitDomInfo = (data) => {
+    if (data && data.length) {
+        const body = data.map(item => JSON.stringify(item));
+        requestIdleCallback(() => {
+            fetch('https://web-monitoring-cba12.firebaseio.com/domInfo.json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body
+            })
+        })
+    }
+}
+
+const submitResourceInfo = (data) => {
+    if (data && data.length) {
+        const body = data.map(item => JSON.stringify(item));
+        requestIdleCallback(() => {
+            fetch('https://web-monitoring-cba12.firebaseio.com/resourceInfo.json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body
+            })
+        })
+    }
+}
 
 const imagesProcessing = images => {
     return images.map(item => {
@@ -17,7 +59,7 @@ const imagesProcessing = images => {
             needToChangeImgFormat: !/.*\.(webp+|svg+|gif+)/ig.test(item.name),
         };
 
-        for(let key in item) {
+        for (let key in item) {
             obj[key] = item[key];
         }
 
@@ -27,12 +69,12 @@ const imagesProcessing = images => {
 
 
 const othersProcessing = others => {
-    return others.map(item =>{
+    return others.map(item => {
         const obj = {
             isCached: item.transferSize === 0,
 
         }
-        for(let key in item) {
+        for (let key in item) {
             obj[key] = item[key];
         }
 
@@ -41,7 +83,17 @@ const othersProcessing = others => {
 }
 
 const requestProcessing = (arr) => {
-    console.log(arr);
+    return arr.map(style => {
+        const obj = {
+            date: Date.now()
+        };
+
+        for (let key in style) {
+            obj[key] = style[key];
+        }
+
+        return obj;
+    })
 };
 
 //UGLY: normala es 3 function-nery?
@@ -93,6 +145,7 @@ const scriptProcessing = scripts => {
 const resourceProcessing = (arr) => {
 
     return [
+        ...requestProcessing(arr.filter(item => item.initiatorType === 'xmlhttprequest')),
         ...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),
         ...cssProcessing(arr.filter(item => item.initiatorType === 'css')),
         ...linkProcessing(arr.filter(item => item.initiatorType === 'link')),
@@ -106,27 +159,51 @@ const navigationProcessing = (arr) => {
     return arr.map(item => {
         const obj = {
             domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
+            date: Date.now(),
+            connectEnd: item.connectEnd,
+            connectStart: item.connectStart,
+            decodedBodySize: item.decodedBodySize,
+            domComplete: item.domComplete,
+            domContentLoadedEventEnd: item.domContentLoadedEventEnd,
+            domContentLoadedEventStart: item.domContentLoadedEventStart,
+            domInteractive: item.domInteractive,
+            domainLookupEnd: item.domainLookupEnd,
+            domainLookupStart: item.domainLookupStart,
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            loadEventEnd: item.loadEventEnd,
+            loadEventStart: item.loadEventStart,
+            name: item.name,
+            nextHopProtocol: item.nextHopProtocol,
+            redirectCount: item.redirectCount,
+            redirectEnd: item.redirectEnd,
+            redirectStart: item.redirectStart,
+            requestStart: item.requestStart,
+            responseEnd: item.responseEnd,
+            responseStart: item.responseStart,
+            secureConnectionStart: item.secureConnectionStart,
+            serverTiming: item.serverTiming,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+            type: item.type,
+            unloadEventEnd: item.unloadEventEnd,
+            unloadEventStart: item.unloadEventStart,
+            workerStart: item.workerStart
         };
-
-        for(let key in item) {
-            obj[key] = item[key];
-        }
 
         return obj;
     })
 };
 
-
-
-
-
-
 const po = new PerformanceObserver((list) => {
     const dom = navigationProcessing(list.getEntries().filter(item => item instanceof PerformanceNavigationTiming));
     const resources = resourceProcessing(list.getEntries().filter(item => item instanceof PerformanceResourceTiming));
 
-    console.log('DOM =>', dom);
-    console.log('resources =>', resources);
+    submitDomInfo(dom);
+    submitResourceInfo(resources);
 });
 
 po.observe({ entryTypes: ['resource', 'navigation'], buffered: true });
