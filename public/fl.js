@@ -45,16 +45,33 @@ const requestProcessing = (arr) => {
     console.log(arr);
 };
 
+//UGLY: normala?
 const cssProcessing = links => {
-    console.log(links);
+    return links.map(link => {
+        const obj = {
+            isCached: link.transferSize === 0,
+            isMinified: link.name.includes(".min"),
+        };
+
+        for (let key in link) {
+            obj[key] = link[key];
+        }
+
+        return obj;
+    })
 };
 
 const resourceProcessing = (arr) => {
-    return [...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),...othersProcessing(arr.filter(item => item.initiatorType === 'other'))];
+
+    return [
+        ...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),
+        ...cssProcessing(arr.filter(item => item.initiatorType === 'css')),
+        ...othersProcessing(arr.filter(item => item.initiatorType === 'other'))
+    ];
 };
 
 const navigationProcessing = (arr) => {
-    //console.log(arr);
+    console.log(arr);
     return arr.map(item => {
         const obj = {
             domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
@@ -77,7 +94,7 @@ const po = new PerformanceObserver((list) => {
     const dom = navigationProcessing(list.getEntries().filter(item => item instanceof PerformanceNavigationTiming));
     const resources = resourceProcessing(list.getEntries().filter(item => item instanceof PerformanceResourceTiming));
 
-    //console.log('DOM =>', dom);
+    console.log('DOM =>', dom);
     console.log('resources =>', resources);
 });
 
