@@ -83,14 +83,32 @@ const othersProcessing = others => {
 }
 
 const requestProcessing = (arr) => {
-    return arr.map(style => {
+    return arr.map(item => {
         const obj = {
-            date: Date.now()
+            date: Date.now(),
+            connectEnd: item.connectEnd,
+            connectStart: item.connectStart,
+            decodedBodySize: item.decodedBodySize,
+            domainLookupEnd: item.domainLookupEnd,
+            domainLookupStart: item.domainLookupStart,
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            nextHopProtocol: item.nextHopProtocol,
+            redirectEnd: item.redirectEnd,
+            redirectStart: item.redirectStart,
+            requestStart: item.requestStart,
+            responseEnd: item.responseEnd,
+            responseStart: item.responseStart,
+            secureConnectionStart: item.secureConnectionStart,
+            serverTiming: item.serverTiming,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+            workerStart: item.workerStart
         };
-
-        for (let key in style) {
-            obj[key] = style[key];
-        }
 
         return obj;
     })
