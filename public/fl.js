@@ -14,7 +14,8 @@
 const imagesProcessing = images => {
     return images.map(item => {
         const obj = {
-            isCached: item.transferSize === 0
+            isCached: item.transferSize === 0,
+            needToChangeImgFormat: !/.*\.(webp+|svg+|gif+)/ig.test(item.name),
         };
 
         for(let key in item) {
@@ -25,6 +26,21 @@ const imagesProcessing = images => {
     })
 };
 
+
+const othersProcessing = others => {
+    return others.map(item =>{
+        const obj = {
+            isCached: item.transferSize === 0,
+
+        }
+        for(let key in item) {
+            obj[key] = item[key];
+        }
+
+        return obj;
+    })
+}
+
 const requestProcessing = (arr) => {
     console.log(arr);
 };
@@ -34,11 +50,11 @@ const cssProcessing = links => {
 };
 
 const resourceProcessing = (arr) => {
-    return [...imagesProcessing(arr.filter(item => item.initiatorType === 'img'))];
+    return [...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),...othersProcessing(arr.filter(item => item.initiatorType === 'other'))];
 };
 
 const navigationProcessing = (arr) => {
-    console.log(arr);
+    //console.log(arr);
     return arr.map(item => {
         const obj = {
             domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
@@ -61,7 +77,7 @@ const po = new PerformanceObserver((list) => {
     const dom = navigationProcessing(list.getEntries().filter(item => item instanceof PerformanceNavigationTiming));
     const resources = resourceProcessing(list.getEntries().filter(item => item instanceof PerformanceResourceTiming));
 
-    console.log('DOM =>', dom);
+    //console.log('DOM =>', dom);
     console.log('resources =>', resources);
 });
 
