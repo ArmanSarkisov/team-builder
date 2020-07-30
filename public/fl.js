@@ -44,7 +44,7 @@ const requestProcessing = (arr) => {
     console.log(arr);
 };
 
-//UGLY: normala?
+//UGLY: normala es 3 function-nery?
 const cssProcessing = styles => {
     return styles.map(style => {
         const obj = {
@@ -75,12 +75,28 @@ const linkProcessing = links => {
     })
 };
 
+const scriptProcessing = scripts => {
+    return scripts.map(script => {
+        const obj = {
+            isCached: script.transferSize === 0,
+            isMinified: script.name.includes(".min"),
+        };
+
+        for (let key in script) {
+            obj[key] = script[key];
+        }
+
+        return obj;
+    })
+};
+
 const resourceProcessing = (arr) => {
 
     return [
         ...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),
         ...cssProcessing(arr.filter(item => item.initiatorType === 'css')),
         ...linkProcessing(arr.filter(item => item.initiatorType === 'link')),
+        ...scriptProcessing(arr.filter(item => item.initiatorType === 'script')),
         ...othersProcessing(arr.filter(item => item.initiatorType === 'other'))
     ];
 };
