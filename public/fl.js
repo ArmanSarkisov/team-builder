@@ -57,12 +57,16 @@ const imagesProcessing = images => {
         const obj = {
             isCached: item.transferSize === 0,
             needToChangeImgFormat: !/.*\.(webp+|svg+|gif+)/ig.test(item.name),
+            date: Date.now(),
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
         };
-
-        for (let key in item) {
-            obj[key] = item[key];
-        }
-
         return obj;
     })
 };
@@ -72,15 +76,19 @@ const othersProcessing = others => {
     return others.map(item => {
         const obj = {
             isCached: item.transferSize === 0,
-
-        }
-        for (let key in item) {
-            obj[key] = item[key];
-        }
-
+            date: Date.now(),
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+        };
         return obj;
     })
-}
+};
 
 const requestProcessing = (arr) => {
     return arr.map(item => {
