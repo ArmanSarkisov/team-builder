@@ -86,28 +86,28 @@ const requestProcessing = (arr) => {
     return arr.map(item => {
         const obj = {
             date: Date.now(),
-            connectEnd: item.connectEnd,
-            connectStart: item.connectStart,
-            decodedBodySize: item.decodedBodySize,
-            domainLookupEnd: item.domainLookupEnd,
-            domainLookupStart: item.domainLookupStart,
+            // connectEnd: item.connectEnd,
+            // connectStart: item.connectStart,
+            // decodedBodySize: item.decodedBodySize,
+            // domainLookupEnd: item.domainLookupEnd,
+            // domainLookupStart: item.domainLookupStart,
             duration: item.duration,
             encodedBodySize: item.encodedBodySize,
             entryType: item.entryType,
             fetchStart: item.fetchStart,
             initiatorType: item.initiatorType,
             name: item.name,
-            nextHopProtocol: item.nextHopProtocol,
-            redirectEnd: item.redirectEnd,
-            redirectStart: item.redirectStart,
-            requestStart: item.requestStart,
-            responseEnd: item.responseEnd,
-            responseStart: item.responseStart,
-            secureConnectionStart: item.secureConnectionStart,
-            serverTiming: item.serverTiming,
+            // nextHopProtocol: item.nextHopProtocol,
+            // redirectEnd: item.redirectEnd,
+            // redirectStart: item.redirectStart,
+            // requestStart: item.requestStart,
+            // responseEnd: item.responseEnd,
+            // responseStart: item.responseStart,
+            // secureConnectionStart: item.secureConnectionStart,
+            // serverTiming: item.serverTiming,
             startTime: item.startTime,
             transferSize: item.transferSize,
-            workerStart: item.workerStart
+            // workerStart: item.workerStart
         };
 
         return obj;
@@ -179,10 +179,6 @@ const linkProcessing = links => {
             workerStart: item.workerStart
         };
 
-        for (let key in link) {
-            obj[key] = link[key];
-        }
-
         return obj;
     })
 };
@@ -239,6 +235,7 @@ const navigationProcessing = (arr) => {
         const obj = {
             domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
             date: Date.now(),
+            companyId: '1223334444',
             connectEnd: item.connectEnd,
             connectStart: item.connectStart,
             decodedBodySize: item.decodedBodySize,
