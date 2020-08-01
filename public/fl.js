@@ -1,13 +1,19 @@
-// class -> images -> Aharon -> jpg png jpeg -> webp
-// class -> other -> Aharon
-// class -> xmlrequest -> Lilit
-// class -> link -> Rob
-// class -> css -> Rob
-// {
-// useWebP: true || false
-// isCache: true || false
-// loadTime: 1
-// }
+class Request {
+    static postRequest(data) {
+        if (data && data.length) {
+            requestIdleCallback(() => {
+                fetch('https://web-monitoring-cba12.firebaseio.com/resourceInfo.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                })
+            })
+        }
+    }
+}
+
 
 window.requestIdleCallback = window.requestIdleCallback || function (handler) {
     let startTime = Date.now();
@@ -20,7 +26,7 @@ window.requestIdleCallback = window.requestIdleCallback || function (handler) {
             }
         });
     }, 1);
-}
+};
 
 const submitDomInfo = (data) => {
     if (data && data.length) {
@@ -35,273 +41,79 @@ const submitDomInfo = (data) => {
             })
         })
     }
-}
+};
 
 const submitResourceInfo = (data) => {
     if (data && data.length) {
-        const body = data.map(item => JSON.stringify(item));
         requestIdleCallback(() => {
             fetch('https://web-monitoring-cba12.firebaseio.com/resourceInfo.json', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body
+                body: JSON.stringify(data),
             })
         })
     }
+};
+
+
+
+const arr = [];
+function f(arg) {
+    arr.push(arg);
+    const flArr = arr.flat(2);
+    const x = flArr.map(item => {
+        if (item.initiatorType === 'css' || item.initiatorType === 'script' || item.initiatorType === 'link') {
+            return resourcesData(item);
+        } else if (item.initiatorType === 'navigation') {
+            return navigationData(item);
+        } else if (item.initiatorType === 'xmlhttprequest') {
+            return requestsData(item);
+        } else if (item.initiatorType === 'img') {
+            return imgData(item);
+        } else {
+            return otherData(item);
+        }
+    });
+    console.log(x);
+    return x;
 }
-
-const imagesProcessing = images => {
-    return images.map(item => {
-        const obj = {
-            isCached: item.transferSize === 0,
-            needToChangeImgFormat: !/.*\.(webp+|svg+|gif+)/ig.test(item.name),
-            date: Date.now(),
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            name: item.name,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-        };
-        return obj;
-    })
-};
-
-
-const othersProcessing = others => {
-    return others.map(item => {
-        const obj = {
-            isCached: item.transferSize === 0,
-            date: Date.now(),
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            name: item.name,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-        };
-        return obj;
-    })
-};
-
-const requestProcessing = (arr) => {
-    return arr.map(item => {
-        const obj = {
-            date: Date.now(),
-            // connectEnd: item.connectEnd,
-            // connectStart: item.connectStart,
-            // decodedBodySize: item.decodedBodySize,
-            // domainLookupEnd: item.domainLookupEnd,
-            // domainLookupStart: item.domainLookupStart,
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            name: item.name,
-            // nextHopProtocol: item.nextHopProtocol,
-            // redirectEnd: item.redirectEnd,
-            // redirectStart: item.redirectStart,
-            // requestStart: item.requestStart,
-            // responseEnd: item.responseEnd,
-            // responseStart: item.responseStart,
-            // secureConnectionStart: item.secureConnectionStart,
-            // serverTiming: item.serverTiming,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-            // workerStart: item.workerStart
-        };
-
-        return obj;
-    })
-};
-
-//UGLY: normala es 3 function-nery?
-const cssProcessing = styles => {
-    return styles.map(item => {
-        const obj = {
-            isCached: item.transferSize === 0,
-            isMinified: item.name.includes(".min"),
-            date: Date.now(),
-            connectEnd: item.connectEnd,
-            connectStart: item.connectStart,
-            decodedBodySize: item.decodedBodySize,
-            domainLookupEnd: item.domainLookupEnd,
-            domainLookupStart: item.domainLookupStart,
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            name: item.name,
-            nextHopProtocol: item.nextHopProtocol,
-            redirectEnd: item.redirectEnd,
-            redirectStart: item.redirectStart,
-            requestStart: item.requestStart,
-            responseEnd: item.responseEnd,
-            responseStart: item.responseStart,
-            secureConnectionStart: item.secureConnectionStart,
-            serverTiming: item.serverTiming,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-            workerStart: item.workerStart
-        };
-
-        return obj;
-    })
-};
-
-const linkProcessing = links => {
-    return links.map(item => {
-        const obj = {
-            isCached: item.transferSize === 0,
-            isMinified: item.name.includes(".min"),
-            date: Date.now(),
-            connectEnd: item.connectEnd,
-            connectStart: item.connectStart,
-            decodedBodySize: item.decodedBodySize,
-            domainLookupEnd: item.domainLookupEnd,
-            domainLookupStart: item.domainLookupStart,
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            name: item.name,
-            nextHopProtocol: item.nextHopProtocol,
-            redirectEnd: item.redirectEnd,
-            redirectStart: item.redirectStart,
-            requestStart: item.requestStart,
-            responseEnd: item.responseEnd,
-            responseStart: item.responseStart,
-            secureConnectionStart: item.secureConnectionStart,
-            serverTiming: item.serverTiming,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-            workerStart: item.workerStart
-        };
-
-        return obj;
-    })
-};
-
-const scriptProcessing = scripts => {
-    return scripts.map(item => {
-        const obj = {
-            isCached: item.transferSize === 0,
-            isMinified: item.name.includes(".min"),
-            date: Date.now(),
-            connectEnd: item.connectEnd,
-            connectStart: item.connectStart,
-            decodedBodySize: item.decodedBodySize,
-            domainLookupEnd: item.domainLookupEnd,
-            domainLookupStart: item.domainLookupStart,
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            name: item.name,
-            nextHopProtocol: item.nextHopProtocol,
-            redirectEnd: item.redirectEnd,
-            redirectStart: item.redirectStart,
-            requestStart: item.requestStart,
-            responseEnd: item.responseEnd,
-            responseStart: item.responseStart,
-            secureConnectionStart: item.secureConnectionStart,
-            serverTiming: item.serverTiming,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-            workerStart: item.workerStart
-        };
-
-        return obj;
-    })
-};
 
 const resourceProcessing = (arr) => {
 
-    return [
-        ...requestProcessing(arr.filter(item => item.initiatorType === 'xmlhttprequest')),
-        ...imagesProcessing(arr.filter(item => item.initiatorType === 'img')),
-        ...cssProcessing(arr.filter(item => item.initiatorType === 'css')),
-        ...linkProcessing(arr.filter(item => item.initiatorType === 'link')),
-        ...scriptProcessing(arr.filter(item => item.initiatorType === 'script')),
-        ...othersProcessing(arr.filter(item => item.initiatorType === 'other'))
-    ];
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(f(arr));
+        }, 15000);
+    });
+
 };
 
-const navigationProcessing = (arr) => {
-    console.log(arr);
-    return arr.map(item => {
-        const obj = {
-            domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
-            date: Date.now(),
-            companyId: '1223334444',
-            connectEnd: item.connectEnd,
-            connectStart: item.connectStart,
-            decodedBodySize: item.decodedBodySize,
-            domComplete: item.domComplete,
-            domContentLoadedEventEnd: item.domContentLoadedEventEnd,
-            domContentLoadedEventStart: item.domContentLoadedEventStart,
-            domInteractive: item.domInteractive,
-            domainLookupEnd: item.domainLookupEnd,
-            domainLookupStart: item.domainLookupStart,
-            duration: item.duration,
-            encodedBodySize: item.encodedBodySize,
-            entryType: item.entryType,
-            fetchStart: item.fetchStart,
-            initiatorType: item.initiatorType,
-            loadEventEnd: item.loadEventEnd,
-            loadEventStart: item.loadEventStart,
-            name: item.name,
-            nextHopProtocol: item.nextHopProtocol,
-            redirectCount: item.redirectCount,
-            redirectEnd: item.redirectEnd,
-            redirectStart: item.redirectStart,
-            requestStart: item.requestStart,
-            responseEnd: item.responseEnd,
-            responseStart: item.responseStart,
-            secureConnectionStart: item.secureConnectionStart,
-            serverTiming: item.serverTiming,
-            startTime: item.startTime,
-            transferSize: item.transferSize,
-            type: item.type,
-            unloadEventEnd: item.unloadEventEnd,
-            unloadEventStart: item.unloadEventStart,
-            workerStart: item.workerStart
-        };
-
-        return obj;
-    })
-};
 
 const po = new PerformanceObserver((list) => {
-    const dom = navigationProcessing(list.getEntries().filter(item => item instanceof PerformanceNavigationTiming));
     const resources = resourceProcessing(list.getEntries().filter(item => item instanceof PerformanceResourceTiming));
 
-    submitDomInfo(dom);
-    submitResourceInfo(resources);
+    resources.then(r => {
+        // submitResourceInfo(r);
+    })
+
 });
 
-po.observe({ entryTypes: ['resource', 'navigation'], buffered: true });
+po.observe({ entryTypes: ['resource', 'navigation']});
 
 
 
+setTimeout(() => {
+    po.disconnect();
+}, 15000);
 
 
 
+// Navigation Data fn
 
 
 
-
-/* DONT DELETE IT WORKED
 
 class CheckUsingBadMethods {
 
@@ -326,37 +138,105 @@ class CheckUsingBadMethods {
             let usingEvalCount = 0;
             window.eval = (params) => {
                 usingEvalCount++;
-                CheckUsingBadMethods.evalCount += usingEvalCount;
+                Request.postRequest([{message: `don't use eval(), you use eval ${usingEvalCount}`}]);
                 evaluate.call(window, params);
             };
         }
     }
 }
 
-window.CheckUsingBadMethods = CheckUsingBadMethods;
 CheckUsingBadMethods.checkUsingEval();
 CheckUsingBadMethods.checkUsingDocumentWrite();
-Navigation.isPageCached();
 
-*/
+window.eval('console.log(10+20)');
 
 
-/* fetch maybe is ready
-function fetching(data, endpoint) {
-    fetch(`url/${endpoint}`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-    });
+function navigationData(item) {
+    return {
+        domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
+        date: Date.now(),
+        companyId: '1223334444',
+        domComplete: item.domComplete,
+        domInteractive: item.domInteractive,
+        duration: item.duration,
+        encodedBodySize: item.encodedBodySize,
+        entryType: item.entryType,
+        fetchStart: item.fetchStart,
+        initiatorType: item.initiatorType,
+        name: item.name,
+        requestStart: item.requestStart,
+        responseEnd: item.responseEnd,
+        responseStart: item.responseStart,
+        startTime: item.startTime,
+        transferSize: item.transferSize,
+        type: item.type,
+    }
 }
 
-function fetchImgs(cache) {
-    fetching(cache, '/imgs');
-}
-function fetchNavTiming(cache) {
-    fetching(cache, '/imgs');
+
+function resourcesData(item) {
+    return {
+        isCached: item.transferSize === 0,
+        isMinified: item.name.includes(".min"),
+        date: Date.now(),
+        duration: item.duration,
+        encodedBodySize: item.encodedBodySize,
+        entryType: item.entryType,
+        fetchStart: item.fetchStart,
+        initiatorType: item.initiatorType,
+        name: item.name,
+        startTime: item.startTime,
+        transferSize: item.transferSize,
+    }
 }
 
- */
+
+function requestsData(item) {
+    return {
+        date: Date.now(),
+        duration: item.duration,
+        encodedBodySize: item.encodedBodySize,
+        entryType: item.entryType,
+        fetchStart: item.fetchStart,
+        initiatorType: item.initiatorType,
+        name: item.name,
+        startTime: item.startTime,
+        transferSize: item.transferSize,
+    };
+}
+
+
+function imgData(item) {
+    return {
+        isCached: item.transferSize === 0,
+        needToChangeImgFormat: !/.*\.(webp+|svg+|gif+)/ig.test(item.name),
+        date: Date.now(),
+        duration: item.duration,
+        encodedBodySize: item.encodedBodySize,
+        entryType: item.entryType,
+        fetchStart: item.fetchStart,
+        initiatorType: item.initiatorType,
+        name: item.name,
+        startTime: item.startTime,
+        transferSize: item.transferSize,
+    }
+}
+
+function otherData(item) {
+    return {
+        isCached: item.transferSize === 0,
+        date: Date.now(),
+        duration: item.duration,
+        encodedBodySize: item.encodedBodySize,
+        entryType: item.entryType,
+        fetchStart: item.fetchStart,
+        initiatorType: item.initiatorType,
+        name: item.name,
+        startTime: item.startTime,
+        transferSize: item.transferSize,
+    }
+}
+
 
 
 /** DO NOT DELETE!!!!!!!!!! */
