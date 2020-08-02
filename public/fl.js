@@ -129,7 +129,6 @@ class DataAnalytics {
                 const data = DataAnalytics.eachData(item);
 
                 data.domContentLoaded = item.domContentLoadedEventEnd - item.domContentLoadedEventStart;
-                data.companyId = '1223334444';
                 data.domComplete = item.domComplete;
                 data.domInteractive = item.domInteractive;
 
@@ -140,7 +139,7 @@ class DataAnalytics {
                 const data = DataAnalytics.eachData(item);
 
                 data.isCached = item.transferSize === 0;
-                data.needToChangeImgForma = !/.*\.(webp+|svg+|gif+)/ig.test(item.name);
+                data.needToChangeImgFormat = !/.*\.(webp+|svg+|gif+)/ig.test(item.name);
 
                 return data;
             } else {
