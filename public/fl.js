@@ -13,14 +13,35 @@
     };
 })();
 
+class Monitoring {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    use() {
+        if(this.apiKey) {
+            ObservePerformance.observe();
+            EvilMethodsCheck.checkUsingEval();
+            EvilMethodsCheck.checkUsingDocumentWrite();
+        }
+    }
+}
+
 // not recommended methods
-class CheckUsingBadMethods {
+class EvilMethodsCheck {
 
     static checkUsingDocumentWrite() {
         if (document) {
             const write = document.write;
             document.write = (params) => {
-                Request.postRequest('info', [{ message: `don't use document.write()` }]);
+                Request.postRequest('info', [
+                    {
+                        date: Date.now(),
+                        appId: 1223334444,
+                        type: 'write',
+                        message: `don't use document.write()`
+                    }
+                ]);
                 write.call(document, params);
             };
         }
@@ -30,7 +51,14 @@ class CheckUsingBadMethods {
         if (window) {
             const evaluate = window.eval;
             window.eval = (params) => {
-                Request.postRequest('info',[{ message: `don't use eval()` }]);
+                Request.postRequest('info',[
+                    {
+                        date: Date.now(),
+                        appId: 1223334444,
+                        type: 'eval',
+                        message: `don't use eval()`
+                    }
+                ]);
                 evaluate.call(window, params);
             };
         }
@@ -58,8 +86,8 @@ class ObservePerformance {
             const resources = ObservePerformance.dataProcessing(list.getEntries()
                 .filter(item => item instanceof PerformanceResourceTiming));
 
-            resources.then(r => {
-                Request.postRequest('analytics', r);
+            resources.then(data => {
+                Request.postRequest('analytics', data);
             });
         });
     }
@@ -82,11 +110,12 @@ class ObservePerformance {
         const po = ObservePerformance.performanceObserveInstance();
 
         po.observe({ entryTypes: ['resource', 'navigation'] });
+
+        ObservePerformance.disconnect(po);
     }
 
-    static disconnect() {
+    static disconnect(po) {
         const DISCONNECT_TIMING = 25000;
-        const po = ObservePerformance.performanceObserveInstance();
 
         setTimeout(() => {
             po.disconnect();
@@ -122,7 +151,8 @@ class DataAnalytics {
                 const data = DataAnalytics.eachData(item);
 
                 data.isCached = item.transferSize === 0;
-                data.isMinified = item.name.includes('.min');
+                data.isMinified = (item.name.includes('css') || item.name.includes('js')) ? item.name.includes('.min') : null;
+                delete data.isMinified;
 
                 return data;
             } else if (item.initiatorType === 'navigation') {
@@ -154,7 +184,8 @@ class DataAnalytics {
 }
 
 
-ObservePerformance.observe();
-CheckUsingBadMethods.checkUsingEval();
-CheckUsingBadMethods.checkUsingDocumentWrite();
-ObservePerformance.disconnect();
+
+//** how to use
+// const monitoring = new Monitoring('1233');
+//
+// monitoring.use();
