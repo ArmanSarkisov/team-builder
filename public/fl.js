@@ -34,14 +34,14 @@ class EvilMethodsCheck {
         if (document) {
             const write = document.write;
             document.write = (params) => {
-                Request.postRequest('info', [
+                Request.postRequest('info',
                     {
                         date: Date.now(),
-                        appId: 1223334444,
+                        appId: '1223334444',
                         type: 'write',
                         message: `don't use document.write()`
                     }
-                ]);
+                );
                 write.call(document, params);
             };
         }
@@ -51,14 +51,14 @@ class EvilMethodsCheck {
         if (window) {
             const evaluate = window.eval;
             window.eval = (params) => {
-                Request.postRequest('info',[
+                Request.postRequest('info',
                     {
                         date: Date.now(),
-                        appId: 1223334444,
+                        appId: '1223334444',
                         type: 'eval',
                         message: `don't use eval()`
                     }
-                ]);
+                );
                 evaluate.call(window, params);
             };
         }
@@ -67,14 +67,14 @@ class EvilMethodsCheck {
 
 class Request {
     static postRequest(endpoint, data) {
-        if (data && data.length) {
+        if ((data && data.length) || data) {
             requestIdleCallback(() => {
                 fetch(`https://web-monitoring-cba12.firebaseio.com/${endpoint}.json`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(...data),
                 });
             });
         }
@@ -128,6 +128,7 @@ class DataAnalytics {
     static eachData(item) {
         return {
             date: Date.now(),
+            appId: '1223334444',
             duration: item.duration,
             encodedBodySize: item.encodedBodySize,
             entryType: item.entryType,
@@ -190,3 +191,5 @@ window.Monitoring = Monitoring;
 // const monitoring = new Monitoring('1233');
 //
 // monitoring.use();
+
+
