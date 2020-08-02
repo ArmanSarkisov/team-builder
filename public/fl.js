@@ -184,6 +184,7 @@ class DataAnalytics {
 }
 
 
+window.Monitoring = Monitoring;
 
 //** how to use
 // const monitoring = new Monitoring('1233');
