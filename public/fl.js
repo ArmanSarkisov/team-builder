@@ -29,7 +29,7 @@ class Monitoring {
 }
 
 // not recommended methods
-class EvilMethodsCheck {
+class EvilMethodsCheck extends Monitoring {
 
     static checkUsingDocumentWrite() {
         if (document) {
@@ -38,7 +38,7 @@ class EvilMethodsCheck {
                 Request.postRequest('info',
                     [{
                         date: Date.now(),
-                        appId: '1223334444',
+                        appId: this.apiKey,
                         type: 'write',
                         message: `don't use document.write()`,
                         details: 'see more at: https://developer.mozilla.org/ru/docs/Web/API/Document/write'
@@ -56,7 +56,7 @@ class EvilMethodsCheck {
                 Request.postRequest('info',
                     [{
                         date: Date.now(),
-                        appId: '1223334444',
+                        appId: this.apiKey,
                         type: 'eval',
                         message: `don't use eval()`,
                         details: 'see more at: https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/eval'
@@ -128,11 +128,11 @@ class ObservePerformance {
 }
 
 
-class DataAnalytics {
+class DataAnalytics extends Monitoring {
     static eachData(item) {
         return {
             date: Date.now(),
-            appId: '1223334444',
+            appId: this.apiKey,
             duration: item.duration,
             encodedBodySize: item.encodedBodySize,
             entryType: item.entryType,
@@ -189,7 +189,7 @@ class DataAnalytics {
     }
 }
 
-class MetaTags {
+class MetaTags extends Monitoring {
 
     static checkMetaTags() {
         const meta = [...document.querySelectorAll('meta')];
@@ -236,7 +236,7 @@ class MetaTags {
             : 'There is not any bad meta tags';
 
         Request.postRequest('info', [{
-            appId: '1223334444',
+            appId: this.apiKey,
             date: Date.now(),
             titleMessage,
             message: badMetasMessage,
