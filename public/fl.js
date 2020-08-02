@@ -1,132 +1,26 @@
-class Request {
-    static postRequest(data) {
-        if (data && data.length) {
-            requestIdleCallback(() => {
-                fetch('https://web-monitoring-cba12.firebaseio.com/resourceInfo.json', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data),
-                })
-            })
-        }
-    }
-}
+(function addRequestIdleCallback() {
+    window.requestIdleCallback = window.requestIdleCallback || function (handler) {
+        let startTime = Date.now();
 
+        return setTimeout(function () {
+            handler({
+                didTimeout: false,
+                timeRemaining: function () {
+                    return Math.max(0, 50.0 - (Date.now() - startTime));
+                }
+            });
+        }, 1);
+    };
+})();
 
-window.requestIdleCallback = window.requestIdleCallback || function (handler) {
-    let startTime = Date.now();
-
-    return setTimeout(function () {
-        handler({
-            didTimeout: false,
-            timeRemaining: function () {
-                return Math.max(0, 50.0 - (Date.now() - startTime));
-            }
-        });
-    }, 1);
-};
-
-const submitDomInfo = (data) => {
-    if (data && data.length) {
-        const body = data.map(item => JSON.stringify(item));
-        requestIdleCallback(() => {
-            fetch('https://web-monitoring-cba12.firebaseio.com/domInfo.json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body
-            })
-        })
-    }
-};
-
-const submitResourceInfo = (data) => {
-    if (data && data.length) {
-        requestIdleCallback(() => {
-            fetch('https://web-monitoring-cba12.firebaseio.com/resourceInfo.json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-            })
-        })
-    }
-};
-
-
-
-const arr = [];
-function f(arg) {
-    arr.push(arg);
-    const flArr = arr.flat(2);
-    const x = flArr.map(item => {
-        if (item.initiatorType === 'css' || item.initiatorType === 'script' || item.initiatorType === 'link') {
-            return resourcesData(item);
-        } else if (item.initiatorType === 'navigation') {
-            return navigationData(item);
-        } else if (item.initiatorType === 'xmlhttprequest') {
-            return requestsData(item);
-        } else if (item.initiatorType === 'img') {
-            return imgData(item);
-        } else {
-            return otherData(item);
-        }
-    });
-    console.log(x);
-    return x;
-}
-
-const resourceProcessing = (arr) => {
-
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(f(arr));
-        }, 15000);
-    });
-
-};
-
-
-const po = new PerformanceObserver((list) => {
-    const resources = resourceProcessing(list.getEntries().filter(item => item instanceof PerformanceResourceTiming));
-
-    resources.then(r => {
-        // submitResourceInfo(r);
-    })
-
-});
-
-po.observe({ entryTypes: ['resource', 'navigation']});
-
-
-
-setTimeout(() => {
-    po.disconnect();
-}, 15000);
-
-
-
-// Navigation Data fn
-
-
-
-
+// not recommended methods
 class CheckUsingBadMethods {
-
-    static evalCount = 0;
-    static checkDocWriteCount = 0;
 
     static checkUsingDocumentWrite() {
         if (document) {
             const write = document.write;
-            let usingDocWriteCount = 0;
             document.write = (params) => {
-                usingDocWriteCount++;
-                CheckUsingBadMethods.checkDocWriteCount += usingDocWriteCount;
+                Request.postRequest('info', [{ message: `don't use document.write()` }]);
                 write.call(document, params);
             };
         }
@@ -135,113 +29,133 @@ class CheckUsingBadMethods {
     static checkUsingEval() {
         if (window) {
             const evaluate = window.eval;
-            let usingEvalCount = 0;
             window.eval = (params) => {
-                usingEvalCount++;
-                Request.postRequest([{message: `don't use eval(), you use eval ${usingEvalCount}`}]);
+                Request.postRequest('info',[{ message: `don't use eval()` }]);
                 evaluate.call(window, params);
             };
         }
     }
 }
 
+class Request {
+    static postRequest(endpoint, data) {
+        if (data && data.length) {
+            requestIdleCallback(() => {
+                fetch(`https://web-monitoring-cba12.firebaseio.com/${endpoint}.json`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                });
+            });
+        }
+    }
+}
+class ObservePerformance {
+    static performanceObserveInstance() {
+        return new PerformanceObserver((list) => {
+            const resources = ObservePerformance.dataProcessing(list.getEntries()
+                .filter(item => item instanceof PerformanceResourceTiming));
+
+            resources.then(r => {
+                Request.postRequest('analytics', r);
+            });
+        });
+    }
+
+    static dataProcessing(data) {
+        const TIMING = 15000;
+
+        return new Promise((resolve, reject) => {
+            if (data) {
+                setTimeout(() => {
+                    resolve(DataAnalytics.mutateObjects(data));
+                }, TIMING);
+            } else {
+                reject('something went to wrong');
+            }
+        });
+    }
+
+    static observe() {
+        const po = ObservePerformance.performanceObserveInstance();
+
+        po.observe({ entryTypes: ['resource', 'navigation'] });
+    }
+
+    static disconnect() {
+        const DISCONNECT_TIMING = 25000;
+        const po = ObservePerformance.performanceObserveInstance();
+
+        setTimeout(() => {
+            po.disconnect();
+        }, DISCONNECT_TIMING);
+    }
+}
+
+
+class DataAnalytics {
+    static eachData(item) {
+        return {
+            date: Date.now(),
+            duration: item.duration,
+            encodedBodySize: item.encodedBodySize,
+            entryType: item.entryType,
+            fetchStart: item.fetchStart,
+            initiatorType: item.initiatorType,
+            name: item.name,
+            startTime: item.startTime,
+            transferSize: item.transferSize,
+        };
+    }
+
+    static mutateObjects(arg) {
+        const tempArray = [];
+
+        tempArray.push(arg);
+
+        const flatedArray = tempArray.flat(2);
+
+        return flatedArray.map(item => {
+            if (item.initiatorType === 'css' || item.initiatorType === 'script' || item.initiatorType === 'link') {
+                const data = DataAnalytics.eachData(item);
+
+                data.isCached = item.transferSize === 0;
+                data.isMinified = item.name.includes('.min');
+
+                return data;
+            } else if (item.initiatorType === 'navigation') {
+                const data = DataAnalytics.eachData(item);
+
+                data.domContentLoaded = item.domContentLoadedEventEnd - item.domContentLoadedEventStart;
+                data.companyId = '1223334444';
+                data.domComplete = item.domComplete;
+                data.domInteractive = item.domInteractive;
+
+                return data;
+            } else if (item.initiatorType === 'xmlhttprequest') {
+                return DataAnalytics.eachData(item);
+            } else if (item.initiatorType === 'img') {
+                const data = DataAnalytics.eachData(item);
+
+                data.isCached = item.transferSize === 0;
+                data.needToChangeImgForma = !/.*\.(webp+|svg+|gif+)/ig.test(item.name);
+
+                return data;
+            } else {
+                const data = DataAnalytics.eachData(item);
+
+                data.isCached = item.transferSize === 0;
+
+                return data;
+            }
+        });
+    }
+}
+
+
+ObservePerformance.observe();
 CheckUsingBadMethods.checkUsingEval();
 CheckUsingBadMethods.checkUsingDocumentWrite();
-
-window.eval('console.log(10+20)');
-
-
-function navigationData(item) {
-    return {
-        domContentLoaded: item.domContentLoadedEventEnd - item.domContentLoadedEventStart,
-        date: Date.now(),
-        companyId: '1223334444',
-        domComplete: item.domComplete,
-        domInteractive: item.domInteractive,
-        duration: item.duration,
-        encodedBodySize: item.encodedBodySize,
-        entryType: item.entryType,
-        fetchStart: item.fetchStart,
-        initiatorType: item.initiatorType,
-        name: item.name,
-        requestStart: item.requestStart,
-        responseEnd: item.responseEnd,
-        responseStart: item.responseStart,
-        startTime: item.startTime,
-        transferSize: item.transferSize,
-        type: item.type,
-    }
-}
-
-
-function resourcesData(item) {
-    return {
-        isCached: item.transferSize === 0,
-        isMinified: item.name.includes(".min"),
-        date: Date.now(),
-        duration: item.duration,
-        encodedBodySize: item.encodedBodySize,
-        entryType: item.entryType,
-        fetchStart: item.fetchStart,
-        initiatorType: item.initiatorType,
-        name: item.name,
-        startTime: item.startTime,
-        transferSize: item.transferSize,
-    }
-}
-
-
-function requestsData(item) {
-    return {
-        date: Date.now(),
-        duration: item.duration,
-        encodedBodySize: item.encodedBodySize,
-        entryType: item.entryType,
-        fetchStart: item.fetchStart,
-        initiatorType: item.initiatorType,
-        name: item.name,
-        startTime: item.startTime,
-        transferSize: item.transferSize,
-    };
-}
-
-
-function imgData(item) {
-    return {
-        isCached: item.transferSize === 0,
-        needToChangeImgFormat: !/.*\.(webp+|svg+|gif+)/ig.test(item.name),
-        date: Date.now(),
-        duration: item.duration,
-        encodedBodySize: item.encodedBodySize,
-        entryType: item.entryType,
-        fetchStart: item.fetchStart,
-        initiatorType: item.initiatorType,
-        name: item.name,
-        startTime: item.startTime,
-        transferSize: item.transferSize,
-    }
-}
-
-function otherData(item) {
-    return {
-        isCached: item.transferSize === 0,
-        date: Date.now(),
-        duration: item.duration,
-        encodedBodySize: item.encodedBodySize,
-        entryType: item.entryType,
-        fetchStart: item.fetchStart,
-        initiatorType: item.initiatorType,
-        name: item.name,
-        startTime: item.startTime,
-        transferSize: item.transferSize,
-    }
-}
-
-
-
-/** DO NOT DELETE!!!!!!!!!! */
-
-//for finding the image element from the source
-// Array.from(document.getElementsByTagName('img')).filter(i => i.src=='https://www.nicepng.com/png/detail/503-5032252_shamim-amiri-blank-female-avatar-icon.png')
-// requestIdleCallback( Resource.RequestTiming(), { timeout: 2000 });
-/** DO NOT DELETE!!!!!!!!!! */
+ObservePerformance.disconnect();
