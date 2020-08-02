@@ -91,8 +91,7 @@ class ObservePerformance {
                 .filter(item => item instanceof PerformanceResourceTiming));
 
             resources.then(data => {
-                console.log(data);
-                // Request.postRequest('analytics', data);
+                Request.postRequest('analytics', data);
             });
         });
     }
@@ -240,7 +239,7 @@ class MetaTags {
             appId: '1223334444',
             date: Date.now(),
             titleMessage,
-            badMetasMessage,
+            message: badMetasMessage,
             type: 'meta',
             details: 'see more at: https://metatags.io/'
         }]);
