@@ -19,10 +19,11 @@ class Monitoring {
     }
 
     use() {
-        if(this.apiKey) {
+        if (this.apiKey) {
             ObservePerformance.observe();
             EvilMethodsCheck.checkUsingEval();
             EvilMethodsCheck.checkUsingDocumentWrite();
+            MetaTags.checkMetaTags();
         }
     }
 }
@@ -35,12 +36,13 @@ class EvilMethodsCheck {
             const write = document.write;
             document.write = (params) => {
                 Request.postRequest('info',
-                    {
+                    [{
                         date: Date.now(),
                         appId: '1223334444',
                         type: 'write',
-                        message: `don't use document.write()`
-                    }
+                        message: `don't use document.write()`,
+                        details: 'see more at: https://developer.mozilla.org/ru/docs/Web/API/Document/write'
+                    }]
                 );
                 write.call(document, params);
             };
@@ -52,12 +54,13 @@ class EvilMethodsCheck {
             const evaluate = window.eval;
             window.eval = (params) => {
                 Request.postRequest('info',
-                    {
+                    [{
                         date: Date.now(),
                         appId: '1223334444',
                         type: 'eval',
-                        message: `don't use eval()`
-                    }
+                        message: `don't use eval()`,
+                        details: 'see more at: https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/eval'
+                    }]
                 );
                 evaluate.call(window, params);
             };
@@ -69,7 +72,7 @@ class Request {
     static postRequest(endpoint, data) {
         if ((data && data.length) || data) {
             requestIdleCallback(() => {
-                fetch(`https://web-monitoring-cba12.firebaseio.com/${endpoint}.json`, {
+                fetch(`https://web-monitoring-cba12.firebaseio.com/${ endpoint }.json`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -80,6 +83,7 @@ class Request {
         }
     }
 }
+
 class ObservePerformance {
     static performanceObserveInstance() {
         return new PerformanceObserver((list) => {
@@ -87,7 +91,8 @@ class ObservePerformance {
                 .filter(item => item instanceof PerformanceResourceTiming));
 
             resources.then(data => {
-                Request.postRequest('analytics', data);
+                console.log(data);
+                // Request.postRequest('analytics', data);
             });
         });
     }
@@ -109,8 +114,8 @@ class ObservePerformance {
     static observe() {
         const po = ObservePerformance.performanceObserveInstance();
 
-        po.observe({ entryTypes: ['resource', 'navigation'] });
-
+        po.observe({ type: 'resource', buffered: true });
+        po.observe({ type: 'navigation', buffered: true });
         ObservePerformance.disconnect(po);
     }
 
@@ -148,11 +153,12 @@ class DataAnalytics {
         const flatedArray = tempArray.flat(2);
 
         return flatedArray.map(item => {
+
             if (item.initiatorType === 'css' || item.initiatorType === 'script' || item.initiatorType === 'link') {
                 const data = DataAnalytics.eachData(item);
 
                 data.isCached = item.transferSize === 0;
-                data.isMinified = (item.name.includes('css') || item.name.includes('js')) ? item.name.includes('.min') : null;
+                data.isMinified = (item.name.includes('.css') || item.name.includes('.js')) ? item.name.includes('.min') : null;
                 delete data.isMinified;
 
                 return data;
@@ -184,12 +190,67 @@ class DataAnalytics {
     }
 }
 
+class MetaTags {
+
+    static checkMetaTags() {
+        const meta = [...document.querySelectorAll('meta')];
+        const title = document.querySelector('title');
+        const metaNames = [];
+        const badMetaTagsName = [];
+        const goodMetaTagsName = [];
+        const goodMetaTags = ['description', 'viewport'];
+        const badMetaTags = [
+            'author',
+            'web author',
+            'revisit after',
+            'rating',
+            'expiration',
+            'data',
+            'copyright',
+            'abstract',
+            'distribution',
+            'generator',
+            'cache-control',
+            'resource type',
+        ];
+
+        for (let item of meta) {
+            metaNames.push(item.name);
+        }
+
+        const titleMessage = title.text.length < 50 ? 'Good Title' : 'Your title is too long';
+
+        meta.forEach(item => {
+            if (badMetaTags.includes(item.name)) {
+                badMetaTagsName.push(item.name);
+            }
+        });
+
+        goodMetaTags.forEach(item => {
+            if (!metaNames.includes(item)) {
+                goodMetaTagsName.push(item);
+            }
+        });
+
+        const badMetasMessage = badMetaTagsName.length
+            ? `You are using ${ badMetaTagsName.join(',') } bad meta tags`
+            : 'There is not any bad meta tags';
+
+        Request.postRequest('info', [{
+            appId: '1223334444',
+            date: Date.now(),
+            titleMessage,
+            badMetasMessage,
+            type: 'meta',
+            details: 'see more at: https://metatags.io/'
+        }]);
+    }
+}
+
 
 window.Monitoring = Monitoring;
 
 //** how to use
-// const monitoring = new Monitoring('1233');
+const monitoring = new Monitoring('1233');
 //
-// monitoring.use();
-
-
+monitoring.use();
