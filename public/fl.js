@@ -18,12 +18,12 @@ class Monitoring {
         this.apiKey = apiKey;
     }
 
-    use() {
+    use(key) {
         if (this.apiKey) {
             ObservePerformance.observe();
-            EvilMethodsCheck.checkUsingEval();
-            EvilMethodsCheck.checkUsingDocumentWrite();
-            MetaTags.checkMetaTags();
+            new EvilMethodsCheck(key).checkUsingEval();
+            new EvilMethodsCheck(key).checkUsingDocumentWrite();
+            new MetaTags(key).checkMetaTags();
         }
     }
 }
@@ -31,7 +31,11 @@ class Monitoring {
 // not recommended methods
 class EvilMethodsCheck extends Monitoring {
 
-    static checkUsingDocumentWrite() {
+    constructor(apiKey) {
+        super(apiKey);
+    }
+
+    checkUsingDocumentWrite() {
         if (document) {
             const write = document.write;
             document.write = (params) => {
@@ -49,7 +53,7 @@ class EvilMethodsCheck extends Monitoring {
         }
     }
 
-    static checkUsingEval() {
+    checkUsingEval() {
         if (window) {
             const evaluate = window.eval;
             window.eval = (params) => {
@@ -102,7 +106,7 @@ class ObservePerformance {
         return new Promise((resolve, reject) => {
             if (data) {
                 setTimeout(() => {
-                    resolve(DataAnalytics.mutateObjects(data));
+                    resolve(new DataAnalytics('1223334444').mutateObjects(data));
                 }, TIMING);
             } else {
                 reject('something went to wrong');
@@ -129,7 +133,12 @@ class ObservePerformance {
 
 
 class DataAnalytics extends Monitoring {
-    static eachData(item) {
+
+    constructor(apiKey) {
+        super(apiKey);
+    }
+
+    eachData(item) {
         return {
             date: Date.now(),
             appId: this.apiKey,
@@ -144,7 +153,8 @@ class DataAnalytics extends Monitoring {
         };
     }
 
-    static mutateObjects(arg) {
+    mutateObjects(arg) {
+
         const tempArray = [];
 
         tempArray.push(arg);
@@ -154,7 +164,7 @@ class DataAnalytics extends Monitoring {
         return flatedArray.map(item => {
 
             if (item.initiatorType === 'css' || item.initiatorType === 'script' || item.initiatorType === 'link') {
-                const data = DataAnalytics.eachData(item);
+                const data = this.eachData(item);
 
                 data.isCached = item.transferSize === 0;
                 data.isMinified = (item.name.includes('.css') || item.name.includes('.js')) ? item.name.includes('.min') : null;
@@ -162,7 +172,7 @@ class DataAnalytics extends Monitoring {
 
                 return data;
             } else if (item.initiatorType === 'navigation') {
-                const data = DataAnalytics.eachData(item);
+                const data = this.eachData(item);
 
                 data.domContentLoaded = item.domContentLoadedEventEnd - item.domContentLoadedEventStart;
                 data.domComplete = item.domComplete;
@@ -170,16 +180,16 @@ class DataAnalytics extends Monitoring {
 
                 return data;
             } else if (item.initiatorType === 'xmlhttprequest') {
-                return DataAnalytics.eachData(item);
+                return this.eachData(item);
             } else if (item.initiatorType === 'img') {
-                const data = DataAnalytics.eachData(item);
+                const data = this.eachData(item);
 
                 data.isCached = item.transferSize === 0;
                 data.needToChangeImgFormat = !/.*\.(webp+|svg+|gif+)/ig.test(item.name);
 
                 return data;
             } else {
-                const data = DataAnalytics.eachData(item);
+                const data = this.eachData(item);
 
                 data.isCached = item.transferSize === 0;
 
@@ -190,8 +200,11 @@ class DataAnalytics extends Monitoring {
 }
 
 class MetaTags extends Monitoring {
+    constructor(apiKey) {
+        super(apiKey);
+    }
 
-    static checkMetaTags() {
+    checkMetaTags() {
         const meta = [...document.querySelectorAll('meta')];
         const title = document.querySelector('title');
         const metaNames = [];
@@ -217,8 +230,6 @@ class MetaTags extends Monitoring {
             metaNames.push(item.name);
         }
 
-        const titleMessage = title.text.length < 50 ? 'Good Title' : 'Your title is too long';
-
         meta.forEach(item => {
             if (badMetaTags.includes(item.name)) {
                 badMetaTagsName.push(item.name);
@@ -231,18 +242,36 @@ class MetaTags extends Monitoring {
             }
         });
 
-        const badMetasMessage = badMetaTagsName.length
-            ? `You are using ${ badMetaTagsName.join(',') } bad meta tags`
-            : 'There is not any bad meta tags';
+        if (title.text.length > 50) {
+            Request.postRequest('info', [{
+                appId: this.apiKey,
+                date: Date.now(),
+                message: 'Your title is too long',
+                type: 'title',
+                details: 'see more at: https://developer.mozilla.org/ru/docs/Web/HTML/Element/title',
+            }]);
+        }
 
-        Request.postRequest('info', [{
-            appId: this.apiKey,
-            date: Date.now(),
-            titleMessage,
-            message: badMetasMessage,
-            type: 'meta',
-            details: 'see more at: https://metatags.io/'
-        }]);
+        if (badMetaTagsName.length) {
+            Request.postRequest('info', [{
+                appId: this.apiKey,
+                date: Date.now(),
+                message: `You are using ${ badMetaTagsName.join(',') } bad meta tags`,
+                type: 'badMeta',
+                details: 'see more at: https://metatags.io/',
+            }]);
+        }
+
+        if (goodMetaTagsName.length) {
+            Request.postRequest('info', [{
+                appId: this.apiKey,
+                date: Date.now(),
+                message: `You have to use ${goodMetaTagsName.join(",")} meta tags`,
+                type: 'goodMeta',
+                details: 'see more at: https://metatags.io/',
+            }]);
+        }
+
     }
 }
 
@@ -250,6 +279,6 @@ class MetaTags extends Monitoring {
 window.Monitoring = Monitoring;
 
 //** how to use
-const monitoring = new Monitoring('1233');
+const monitoring = new Monitoring('1223334444');
 //
-monitoring.use();
+monitoring.use('1223334444');
