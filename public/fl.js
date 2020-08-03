@@ -164,6 +164,7 @@ class DataAnalytics extends Monitoring {
         return flatedArray.map(item => {
 
             if (item.initiatorType === 'css' || item.initiatorType === 'script' || item.initiatorType === 'link') {
+
                 const data = this.eachData(item);
 
                 data.isCached = item.transferSize === 0;
@@ -179,7 +180,7 @@ class DataAnalytics extends Monitoring {
                 data.domInteractive = item.domInteractive;
 
                 return data;
-            } else if (item.initiatorType === 'xmlhttprequest') {
+            } else if (item.initiatorType === 'xmlhttprequest' || item.initiatorType === 'fetch') {
                 return this.eachData(item);
             } else if (item.initiatorType === 'img') {
                 const data = this.eachData(item);
